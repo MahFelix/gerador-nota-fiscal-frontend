@@ -35,7 +35,7 @@ const ListaNotasFiscaisComponent = ({ atualizar }) => {
 
   const handleDeletar = async (id) => {
     try {
-      await api.delete(`/deletar/${id}`);
+      await api.delete(`${id}`);
       setNotas(notas.filter(nota => nota.id !== id));
     } catch (error) {
       console.error("Erro ao deletar nota fiscal:", error);
