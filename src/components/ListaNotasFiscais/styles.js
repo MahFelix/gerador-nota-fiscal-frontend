@@ -12,6 +12,7 @@ export const ListaContainer = styled.div`
     padding: 10px;
     margin: 5px;
     border-radius: 8px;
+   width: auto;
   }
 `;
 
