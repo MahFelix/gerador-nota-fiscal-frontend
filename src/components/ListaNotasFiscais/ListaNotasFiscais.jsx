@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
+import { jsPDF } from "jspdf";
 import api from "../../services/api";
-import { ListaContainer, NotaItem, Carregando, Erro, SemNotas, Titulo, Botao, NotasWrapper, ModalOverlay, ModalContainer, Input } from "./styles";
+import { 
+  ListaContainer, NotaItem, Carregando, Erro, SemNotas, 
+  Titulo, Botao, NotasWrapper, ModalOverlay, ModalContainer, 
+  Input, BotoesContainer, BotaoNF ,BotaoE
+} from "./styles";
+
+
 
 const ListaNotasFiscaisComponent = ({ atualizar }) => {
   const [notas, setNotas] = useState([]);
@@ -28,28 +35,79 @@ const ListaNotasFiscaisComponent = ({ atualizar }) => {
 
   const handleDeletar = async (id) => {
     try {
-      await api.delete(`/${id}`);
-      setNotas(notas.filter(nota => nota.id !== id)); // Atualiza a lista local após deletar
+      await api.delete(`/deletar/${id}`);
+      setNotas(notas.filter(nota => nota.id !== id));
     } catch (error) {
       console.error("Erro ao deletar nota fiscal:", error);
       setErro("Erro ao deletar a nota fiscal");
     }
   };
 
+  const handleDeletarTodas = async () => {
+    if (window.confirm("Tem certeza que deseja excluir TODAS as notas fiscais?")) {
+      try {
+        await api.delete("/delete-all");
+        setNotas([]);
+      } catch (error) {
+        console.error("Erro ao deletar todas as notas:", error);
+        setErro("Erro ao deletar todas as notas");
+      }
+    }
+  };
+
+  const handleGerarRelatorio = () => {
+    try {
+      const doc = new jsPDF();
+      
+      // Configurações iniciais
+      doc.setFont("helvetica", "normal");
+      
+      // Título do relatório
+      doc.setFontSize(20);
+      doc.text("Relatório de Notas Fiscais", 105, 15, { align: 'center' });
+      
+      // Dados das notas
+      let y = 30;
+      notas.forEach((nota, index) => {
+        doc.setFontSize(12);
+        doc.text(`Nota Fiscal #${index + 1}`, 14, y);
+        doc.text(`Cliente: ${nota.cliente}`, 14, y + 7);
+        doc.text(`Produto: ${nota.produto}`, 14, y + 14);
+        doc.text(`Valor: R$ ${nota.valor?.toFixed(2)}`, 14, y + 21);
+        doc.text(`Data: ${new Date(nota.dataEmissao).toLocaleDateString()}`, 14, y + 28);
+        
+        // Linha divisória
+        doc.line(10, y + 33, 200, y + 33);
+        y += 40;
+        
+        // Nova página se necessário
+        if (y > 280 && index < notas.length - 1) {
+          doc.addPage();
+          y = 20;
+        }
+      });
+      
+      // Salvar o PDF
+      doc.save("relatorio_notas_fiscais.pdf");
+    } catch (error) {
+      console.error("Erro ao gerar relatório:", error);
+      setErro("Erro ao gerar o relatório PDF");
+    }
+  };
+
   const handleEditar = (nota) => {
-    setNotaEditando(nota); // Configura a nota para edição
-    setModalAberto(true); // Abre o modal
+    setNotaEditando(nota);
+    setModalAberto(true);
   };
 
   const handleFecharModal = () => {
-    setModalAberto(false); // Fecha o modal
-    setNotaEditando(null); // Reseta a nota editando
+    setModalAberto(false);
+    setNotaEditando(null);
   };
 
   const handleSalvarEdicao = async () => {
     try {
-      // Corrigido o endpoint para incluir o prefixo /api/notas-fiscais
-      await api.put(`/${notaEditando.id}`, notaEditando); // Remove /editar/
+      await api.put(`/${notaEditando.id}`, notaEditando);
       setNotas(notas.map(nota => 
         nota.id === notaEditando.id ? notaEditando : nota
       ));
@@ -75,6 +133,12 @@ const ListaNotasFiscaisComponent = ({ atualizar }) => {
   return (
     <ListaContainer>
       <Titulo>Notas Fiscais Emitidas</Titulo>
+      
+      <BotoesContainer>
+        <BotaoNF onClick={handleGerarRelatorio}>Imprimir Relatório</BotaoNF>
+        <BotaoNF onClick={handleDeletarTodas}>Excluir Todas</BotaoNF>
+      </BotoesContainer>
+      
       <NotasWrapper>
         {notas.map((nota) => (
           <NotaItem key={nota.id}>
@@ -82,9 +146,12 @@ const ListaNotasFiscaisComponent = ({ atualizar }) => {
             <p><strong>Produto:</strong> {nota.produto}</p>
             <p><strong>Valor:</strong> R$ {nota.valor?.toFixed(2)}</p>
             <p><strong>Data de Emissão:</strong> {new Date(nota.dataEmissao).toLocaleDateString()}</p>
+
             <div>
-              <Botao onClick={() => handleEditar(nota)}>Editar</Botao>
+          
+              <BotaoE onClick={() => handleEditar(nota)}>Editar</BotaoE>
               <Botao onClick={() => handleDeletar(nota.id)}>Deletar</Botao>
+             
             </div>
           </NotaItem>
         ))}

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import api from "../../services/api";
-import { FormContainer, Title, Form, Input, Button } from "./styles";
+import { FormContainer, Title, Form, Input, Button, MobileSpacer } from "./styles";
+import imgnote from '../../assets/note.png'
 
 const FormNotaFiscal = ({ atualizarLista }) => {
   const [cliente, setCliente] = useState("");
@@ -31,6 +32,7 @@ const FormNotaFiscal = ({ atualizarLista }) => {
 
   return (
     <FormContainer>
+        <img src={imgnote} width={100}></img>
       <Title>Gerar Nota Fiscal</Title>
       <Form onSubmit={handleSubmit}>
         <Input
@@ -61,6 +63,7 @@ const FormNotaFiscal = ({ atualizarLista }) => {
           onChange={(e) => setDataEmissao(e.target.value)}
           required
         />
+        <MobileSpacer />
         <Button type="submit">Salvar Nota Fiscal</Button>
       </Form>
     </FormContainer>
