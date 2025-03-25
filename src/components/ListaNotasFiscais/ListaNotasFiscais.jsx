@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { jsPDF } from "jspdf";
+import * as XLSX from 'xlsx';
 import api from "../../services/api";
 import { 
   ListaContainer, NotaItem, Carregando, Erro, SemNotas, 
   Titulo, Botao, NotasWrapper, ModalOverlay, ModalContainer, 
-  Input, BotoesContainer, BotaoNF ,BotaoE
+  Input, BotoesContainer, BotaoNF, BotaoE, ModalExportar, 
+  ExportarOpcoes, ExportarBotao
 } from "./styles";
-
-
 
 const ListaNotasFiscaisComponent = ({ atualizar }) => {
   const [notas, setNotas] = useState([]);
@@ -15,6 +15,7 @@ const ListaNotasFiscaisComponent = ({ atualizar }) => {
   const [erro, setErro] = useState(null);
   const [modalAberto, setModalAberto] = useState(false);
   const [notaEditando, setNotaEditando] = useState(null);
+  const [modalExportarAberto, setModalExportarAberto] = useState(false);
 
   useEffect(() => {
     const fetchNotas = async () => {
@@ -55,7 +56,7 @@ const ListaNotasFiscaisComponent = ({ atualizar }) => {
     }
   };
 
-  const handleGerarRelatorio = () => {
+  const gerarPDF = () => {
     try {
       const doc = new jsPDF();
       
@@ -90,9 +91,69 @@ const ListaNotasFiscaisComponent = ({ atualizar }) => {
       // Salvar o PDF
       doc.save("relatorio_notas_fiscais.pdf");
     } catch (error) {
-      console.error("Erro ao gerar relatório:", error);
+      console.error("Erro ao gerar relatório PDF:", error);
       setErro("Erro ao gerar o relatório PDF");
     }
+  };
+
+  const gerarExcel = () => {
+    try {
+      // Preparar os dados para a planilha
+      const dados = notas.map((nota, index) => ({
+        "Nº": index + 1,
+        "Cliente": nota.cliente,
+        "Produto": nota.produto,
+        "Valor (R$)": nota.valor?.toFixed(2),
+        "Data de Emissão": new Date(nota.dataEmissao).toLocaleDateString()
+      }));
+      
+      // Criar a planilha
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(dados);
+      
+      // Adicionar a planilha ao workbook
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Notas Fiscais");
+      
+      // Gerar o arquivo Excel (XLSX)
+      XLSX.writeFile(workbook, "relatorio_notas_fiscais.xlsx", { compression: true });
+    } catch (error) {
+      console.error("Erro ao gerar relatório Excel:", error);
+      setErro("Erro ao gerar o relatório Excel");
+    }
+  };
+
+  const gerarODS = () => {
+    try {
+      // Preparar os dados para a planilha (mesmo formato do Excel)
+      const dados = notas.map((nota, index) => ({
+        "Nº": index + 1,
+        "Cliente": nota.cliente,
+        "Produto": nota.produto,
+        "Valor (R$)": nota.valor?.toFixed(2),
+        "Data de Emissão": new Date(nota.dataEmissao).toLocaleDateString()
+      }));
+      
+      // Criar a planilha
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(dados);
+      
+      // Adicionar a planilha ao workbook
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Notas Fiscais");
+      
+      // Gerar o arquivo ODS (LibreOffice)
+      XLSX.writeFile(workbook, "relatorio_notas_fiscais.ods", { bookType: 'ods' });
+    } catch (error) {
+      console.error("Erro ao gerar relatório ODS:", error);
+      setErro("Erro ao gerar o relatório LibreOffice");
+    }
+  };
+
+  const abrirModalExportar = () => {
+    setModalExportarAberto(true);
+  };
+
+  const fecharModalExportar = () => {
+    setModalExportarAberto(false);
   };
 
   const handleEditar = (nota) => {
@@ -135,7 +196,7 @@ const ListaNotasFiscaisComponent = ({ atualizar }) => {
       <Titulo>Notas Fiscais Emitidas</Titulo>
       
       <BotoesContainer>
-        <BotaoNF onClick={handleGerarRelatorio}>Imprimir Relatório</BotaoNF>
+        <BotaoNF onClick={abrirModalExportar}>Exportar Relatório</BotaoNF>
         <BotaoNF onClick={handleDeletarTodas}>Excluir Todas</BotaoNF>
       </BotoesContainer>
       
@@ -148,10 +209,8 @@ const ListaNotasFiscaisComponent = ({ atualizar }) => {
             <p><strong>Data de Emissão:</strong> {new Date(nota.dataEmissao).toLocaleDateString()}</p>
 
             <div>
-          
               <BotaoE onClick={() => handleEditar(nota)}>Editar</BotaoE>
               <Botao onClick={() => handleDeletar(nota.id)}>Deletar</Botao>
-             
             </div>
           </NotaItem>
         ))}
@@ -200,6 +259,31 @@ const ListaNotasFiscaisComponent = ({ atualizar }) => {
               </div>
             </form>
           </ModalContainer>
+        </ModalOverlay>
+      )}
+
+      {modalExportarAberto && (
+        <ModalOverlay>
+          <ModalExportar>
+            <h3>Exportar Relatório</h3>
+            <p>Selecione o formato desejado:</p>
+            
+            <ExportarOpcoes>
+              <ExportarBotao onClick={gerarPDF}>
+                Baixar como PDF
+              </ExportarBotao>
+              
+              <ExportarBotao onClick={gerarExcel}>
+                Baixar como Excel (XLSX)
+              </ExportarBotao>
+              
+              <ExportarBotao onClick={gerarODS}>
+                Baixar como LibreOffice (ODS)
+              </ExportarBotao>
+            </ExportarOpcoes>
+            
+            <Botao type="button" onClick={fecharModalExportar}>Fechar</Botao>
+          </ModalExportar>
         </ModalOverlay>
       )}
     </ListaContainer>
