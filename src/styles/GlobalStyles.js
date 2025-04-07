@@ -15,7 +15,14 @@ const GlobalStyles = createGlobalStyle`
     align-items: center;
     height: 100vh;
   }
+
+  .adjust-layout {
+    display: flex;
+    width: 100%;
+  }
 `;
+
+
 
 
 

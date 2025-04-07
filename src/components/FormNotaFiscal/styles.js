@@ -19,7 +19,7 @@ export const FormContainer = styled.div`
   }
   
   img {
-    margin-top: 250px;
+   
     height: auto;
     
     @media (max-width: 768px) {
