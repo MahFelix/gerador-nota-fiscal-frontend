@@ -97,3 +97,4 @@ export const MainContent = styled.div`
     width: calc(100% - 250px);
   }
 `;
+
