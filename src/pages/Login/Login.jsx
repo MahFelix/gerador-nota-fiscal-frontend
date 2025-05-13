@@ -12,20 +12,20 @@ import {
   Input,
   SubmitButton,
   LoginFooter,
-  ErrorMessage
+  ErrorMessage,
+  CredentialsBox
 } from './styles';
-import { useAuth } from '../../contexts/AuthContext';
 import { ThemeProvider } from 'styled-components';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
+import { FaSignOutAlt } from 'react-icons/fa'; // Ícone de saída
 
-const Login = () => {
+const Login = ({ onLogin, onLogout, isAuthenticated }) => {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -47,7 +47,7 @@ const Login = () => {
 
     try {
       setLoading(true);
-      const success = await login(formData.email, formData.password);
+      const success = onLogin(formData.email, formData.password);
 
       if (success) {
         navigate('/dashboard');
@@ -62,6 +62,11 @@ const Login = () => {
     }
   };
 
+  const handleLogoutClick = () => {
+    onLogout();
+    navigate('/login');
+  };
+
   const customTheme = {
     colors: {
       primary: '#3a0ca3',
@@ -71,9 +76,25 @@ const Login = () => {
     }
   };
 
+  // Credenciais para teste
+  const testCredentials = [
+    { email: 'admin@teste.com', password: '123456' },
+    { email: 'user@teste.com', password: '123456' }
+  ];
+
   return (
     <ThemeProvider theme={customTheme}>
       <LoginContainer>
+        {isAuthenticated && (
+          <SubmitButton 
+            onClick={handleLogoutClick}
+            style={{ position: 'absolute', top: '20px', right: '20px' }}
+          >
+            <FaSignOutAlt style={{ marginRight: '8px' }} />
+            Sair
+          </SubmitButton>
+        )}
+        
         <LoginCard>
           <LoginHeader>
             <h1>Login</h1>
@@ -128,6 +149,18 @@ const Login = () => {
               {loading ? 'Entrando...' : 'Entrar'}
             </SubmitButton>
           </LoginForm>
+
+          <CredentialsBox>
+            <h4>Credenciais para teste:</h4>
+            <ul>
+              {testCredentials.map((cred, index) => (
+                <li key={index}>
+                  <strong>Email:</strong> {cred.email} <br />
+                  <strong>Senha:</strong> {cred.password}
+                </li>
+              ))}
+            </ul>
+          </CredentialsBox>
 
           <LoginFooter>
             <p>

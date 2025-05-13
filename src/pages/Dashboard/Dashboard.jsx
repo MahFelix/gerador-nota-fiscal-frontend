@@ -56,11 +56,13 @@ const Dashboard = () => {
     );
   }
 
+  const userName = 'Agnaldo'
+
   return (
     <DashboardContainer>
       <DashboardHeader>
         <h1>Dashboard</h1>
-        <p>Bem-vindo de volta, {user?.name}!</p>
+        <p>Bem-vindo de volta, {userName}!</p>
       </DashboardHeader>
 
       <DashboardStats>

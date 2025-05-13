@@ -214,3 +214,32 @@ export const ErrorMessage = styled.div`
     flex-shrink: 0;
   }
 `;
+
+export const CredentialsBox = styled.div`
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+
+  h4 {
+    margin-top: 0;
+    color: #495057;
+    font-size: 0.9rem;
+  }
+
+  ul {
+    padding-left: 1rem;
+    margin-bottom: 0;
+  }
+
+  li {
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    color: #6c757d;
+  }
+
+  strong {
+    color: #495057;
+  }
+`;

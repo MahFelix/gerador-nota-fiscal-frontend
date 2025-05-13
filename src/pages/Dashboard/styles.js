@@ -56,6 +56,7 @@ export const DashboardContainer = styled.div`
   padding: ${getThemeValue('spacing.xxl', '64px')} ${getThemeValue('spacing.xl', '48px')};
   max-width: 1600px;
   margin: 0 auto;
+  margin-top: 200px;
 `;
 
 export const DashboardHeader = styled.div`
